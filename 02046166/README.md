@@ -1,12 +1,5 @@
 ﻿# 02046166
 
-1. Build SOE
-1. Add SOE to ArcGIS Server Extensions
-1. Enable SOE capability on any `MapServer`
-1. See error
-
-# Visual
-
 ![value](./value.png)
 - The field I request is `VALUE` and is shown in the `attributeName` variable
 - The `findIndex` is `1`
