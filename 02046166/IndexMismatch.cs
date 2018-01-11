@@ -82,6 +82,12 @@ namespace IndexMismatch
 
             // when using the index 1, the property will be object id and the value will be the object id
             // when querying for feet, the correct property and value are returned.
+            
+            // The correct way
+            var item2 = item as IIdentifyObject;
+            object props;
+            object values;
+            item2.PropertySet.GetAllProperties(out props, out values);
 
             return Encoding.UTF8.GetBytes(property + ": " + value);
         }
