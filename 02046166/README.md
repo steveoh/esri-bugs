@@ -1,4 +1,6 @@
 ﻿# 02046166
+ 
+ ## Solved :)
 
 ![value](./value.png)
 - The field I request is `VALUE` and is shown in the `attributeName` variable
