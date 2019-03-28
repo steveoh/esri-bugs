@@ -1,0 +1,1 @@
+If you have add an attribute rule that is noneditable, disable it, and then write data to those fields the cursor appears to function but no data is actually written. I would expect an error or some sort of warning.
