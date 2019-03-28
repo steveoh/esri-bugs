@@ -1,7 +1,7 @@
 import arcpy
 import os
 
-sde = 'some.sde'
+sde = os.path.join(os.path.dirname(__file__), '..', 'pro-project', 'uicar.sde')
 featureset_name = 'intersect_fc'
 featureset_table = os.path.join(sde, featureset_name)
 
@@ -19,17 +19,6 @@ var set = FeatureSetByName($datastore, layer);
 
 function getAttributeFromLargestArea(feat, set, field) {
     var items = intersects(set, feat);
-    var counts = count(items);
-
-    if (counts == 0) {
-        return { 'errorMessage': 'No intersection found' };
-    }
-
-    if (counts == 1) {
-        var result = first(items);
-
-        return result[field];
-    }
 
     var largest = -1;
     var result;
@@ -50,7 +39,6 @@ var fips = getAttributeFromLargestArea($feature, set, field);
 
 return iif(isnan(number('490' + fips)), null, number('490' + fips));
 '''
-
 print('creating the feature class to use in the featuresetbyname')
 arcpy.management.CreateFeatureclass(sde, featureset_name, 'POLYGON', spatial_reference=arcpy.SpatialReference(26912))
 arcpy.management.AddField(featureset_table, 'FIPS', 'LONG')
@@ -59,7 +47,7 @@ print('done')
 
 print('giving the featureset some data')
 with arcpy.da.InsertCursor(featureset_table, ['FIPS', 'shape@wkt']) as cursor:
-    print(cursor.insertRow((49001, wkt)))
+    print(cursor.insertRow((1, wkt)))
 print('done')
 
 print('creating table to add rule to')
@@ -68,22 +56,37 @@ arcpy.management.AddField(table, 'CountyNumber', 'LONG')
 arcpy.management.AddGlobalIDs(table)
 print('done')
 
+print('giving the base table some data')
+with arcpy.da.InsertCursor(table, ['CountyNumber', 'shape@wkt']) as cursor:
+    print(cursor.insertRow((49001, wkt)))
+print('done')
+
 print('adding rule')
-arcpy.management.AddAttributeRule(
-    in_table=table,
-    name='test_rule',
-    type='CALCULATION',
-    script_expression=extract_fips,
-    is_editable='EDITABLE',
-    triggering_events='INSERT',
-    error_number=1,
-    error_message='you broke it',
-    description='work please',
-    subtype='',
-    field='CountyNumber',
-    exclude_from_client_evaluation='',
-    batch=False,
-    severity='',
-    tags='bug'
-)
+try:
+    arcpy.management.AddAttributeRule(
+        in_table=table,
+        name='test_rule',
+        type='CALCULATION',
+        script_expression=extract_fips,
+        is_editable='EDITABLE',
+        triggering_events='INSERT',
+        error_number=1,
+        error_message='you broke it',
+        description='work please',
+        subtype='',
+        field='CountyNumber',
+        exclude_from_client_evaluation='',
+        batch=False,
+        severity='',
+        tags='bug'
+    )
+except Exception as e:
+    print(e)
+
+print('done')
+
+print('cleaning up')
+arcpy.management.Delete(table)
+arcpy.management.ClearWorkspaceCache(sde)
+arcpy.management.Delete(featureset_table)
 print('done')
