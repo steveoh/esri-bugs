@@ -14,7 +14,7 @@ return iif (isempty($feature.facility_fk) && isempty($feature.well_fk) || (!isem
 
 ### Actual
 
-It appears when using a relationship class to create a related record the `$feature` that is sent to an attribute rule with an `insert` trigger is empty and all `insert` trigger rules will fail. This makes me think that the process behind the context menu is:
+When using a relationship class to create a related record the `$feature` that is sent to an attribute rule with an `insert` trigger is empty and all `insert` trigger rules will fail. That the process behind the context menu is:
 
 1. Insert empty row with object id and or global id
 1. Update row with FK from parent record
@@ -27,7 +27,7 @@ A resolution would be to insert the row with the FK value as one command.
 
 ### Problem
 
-This is problematic because we do not want to allow users to insert records without a PK. We cannot rely on them to update it later.
+This is problematic because we do not want to allow users to insert records without a PK. We cannot rely only on a update trigger.
 
 ## Software Versions
 
