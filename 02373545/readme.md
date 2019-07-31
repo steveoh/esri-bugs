@@ -19,6 +19,8 @@ When using a relationship class to create a related record the `$feature` that i
 1. Insert empty row with object id and or global id
 1. Update row with FK from parent record
 
+I can create the related record if I remove the `insert` trigger and keep it as an `update` trigger. This is not a workaround.
+
 ### Expected / Resolution
 
 I expect the foreign key will be present on the `$feature` that is sent to the `insert` triggers.
