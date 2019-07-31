@@ -2,7 +2,7 @@
 
 ## create related record fails with attribute constraint rule
 
-![add-relationship](https://user-images.githubusercontent.com/325813/62175399-cc42aa80-b2fa-11e9-87e9-bfd8f24cd051.gif)
+![add-relationship](https://user-images.githubusercontent.com/325813/62175491-31969b80-b2fb-11e9-97c4-b39c65cb427e.gif)
 
 this rule checks that a record has a value in field a or b but not both.
 
