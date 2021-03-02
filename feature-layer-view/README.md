@@ -9,3 +9,5 @@
 1. zoom in on a cluster of points
 1. click to identify again
 1. notice 0 items found when clicking on points
+
+![demo](./featurelayerview.gif)
