@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="viewport" content="initial-scale=1.0">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="https://js.arcgis.com/4.18/esri/css/main.css">
+  <style>
+    html,
+    body,
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+  <script src="https://js.arcgis.com/4.18/"></script>
+  <script type="module">
+    import FeatureLayer from 'https://js.arcgis.com/4.18/@arcgis/core/layers/FeatureLayer.js';
+    import EsriMap from 'https://js.arcgis.com/4.18/@arcgis/core/Map.js';
+    import MapView from 'https://js.arcgis.com/4.18/@arcgis/core/views/MapView.js';
+    import Extent from 'https://js.arcgis.com/4.18/@arcgis/core/geometry/Extent.js';
+    import { whenFalseOnce, whenTrueOnce } from 'https://js.arcgis.com/4.18/@arcgis/core/core/watchUtils.js';
+    import { buffer } from 'https://js.arcgis.com/4.18/@arcgis/core/geometry/geometryEngine.js';
+    import esriConfig from 'https://js.arcgis.com/4.18/@arcgis/core/config.js';
+    esriConfig.assetsPath = 'https://cdn.jsdelivr.net/npm/arcgis-js-api@4.18.0-next.20201213/assets';
+
+    console.log('initializing map');
+
+    const layer = new FeatureLayer({
+      url: 'https://services1.arcgis.com/99lidPhWCzftIe9K/arcgis/rest/services/PublicLibraries/FeatureServer/0',
+      outFields: '*'
+    });
+
+    const map = new EsriMap({
+      basemap: 'gray'
+    });
+
+    const defaultExtent = new Extent({
+      xmax: -12612006,
+      xmin: -12246370,
+      ymax: 5125456,
+      ymin: 4473357,
+      spatialReference: 3857,
+    });
+
+    const view = new MapView({
+      map,
+      container: document.getElementById('map'),
+      extent: defaultExtent,
+      ui: {
+        components: ['zoom'],
+      },
+      popup: {
+        actions: null,
+        spinnerEnabled: false,
+        collapseEnabled: false,
+        highlightEnabled: false,
+        dockOptions: {
+          breakpoint: false,
+          buttonEnabled: false,
+          position: 'top-right',
+        },
+      },
+    });
+
+    map.add(layer);
+
+    const handle = setTimeout(async () => {
+      const layerView = await view.whenLayerView(layer);
+      layer.definitionExpression = "COUNTY='SALT LAKE'";
+
+      whenTrueOnce(layerView, 'updating', () => {
+        whenFalseOnce(layerView, 'updating', async () => {
+          const result = await layerView.queryExtent();
+
+          console.log('updating extent', result);
+
+          // this is in case there is a point way outside of the state...
+          if (result.count === 0 || result.extent.contains(defaultExtent)) {
+            return view.goTo(defaultExtent);
+          }
+
+          let extent = result.extent;
+          if (result.count === 1) {
+            extent = {
+              target: result.extent,
+              scale: 16000,
+            };
+          }
+
+          console.log('zooming in');
+          return view.goTo(extent);
+        });
+      });
+    }, 2000);
+
+    const identify = async (where) => {
+      console.log('identifying');
+
+      const queryFeatures = async (opts) => {
+        const query = {
+          outFields: 'TYPE',
+          orderByFields: 'TYPE ASC',
+          returnGeometry: true,
+        };
+
+        const geom = buffer(opts.mapPoint, view.resolution * 12, 'meters');
+        query.geometry = geom;
+        view.graphics.add({
+          attributes: {},
+          geometry: geom,
+          symbol: {
+            type: "simple-fill",
+            outline: { width: 1.5, color: [32, 26, 216, .4] },
+            color: [0, 0, 0, 0]
+          }
+        });
+
+        const featureSet = await layerView.queryFeatures(query);
+        console.log(featureSet.features.length);
+      };
+
+
+      const layerView = await view.whenLayerView(layer);
+      whenFalseOnce(layerView, 'updating', () => {
+        queryFeatures(where);
+      });
+    }
+    view.on('click', (event) => identify(event));
+  </script>
+
+  <title>feature layer view</title>
+</head>
+
+<body>
+  <div id="map"></div>
+</body>
+
+</html>
