@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="mobile-web-app-capable" content="yes">
-  <link rel="stylesheet" href="https://js.arcgis.com/4.18/esri/css/main.css">
+   <link rel="stylesheet" href="https://js.arcgis.com/next/esri/css/main.css">
   <style>
     html,
     body,
@@ -18,17 +18,16 @@
       width: 100%;
     }
   </style>
-  <script src="https://js.arcgis.com/4.18/"></script>
+  <!-- <script src="https://js.arcgis.com/4.18/"></script> -->
   <script type="module">
-    import FeatureLayer from 'https://js.arcgis.com/4.18/@arcgis/core/layers/FeatureLayer.js';
-    import EsriMap from 'https://js.arcgis.com/4.18/@arcgis/core/Map.js';
-    import MapView from 'https://js.arcgis.com/4.18/@arcgis/core/views/MapView.js';
-    import Extent from 'https://js.arcgis.com/4.18/@arcgis/core/geometry/Extent.js';
-    import { whenFalseOnce, whenTrueOnce } from 'https://js.arcgis.com/4.18/@arcgis/core/core/watchUtils.js';
-    import { buffer } from 'https://js.arcgis.com/4.18/@arcgis/core/geometry/geometryEngine.js';
-    import esriConfig from 'https://js.arcgis.com/4.18/@arcgis/core/config.js';
-    esriConfig.assetsPath = 'https://cdn.jsdelivr.net/npm/arcgis-js-api@4.18.0-next.20201213/assets';
-
+    import FeatureLayer from 'https://js.arcgis.com/next/@arcgis/core/layers/FeatureLayer.js';
+    import EsriMap from 'https://js.arcgis.com/next/@arcgis/core/Map.js';
+    import MapView from 'https://js.arcgis.com/next/@arcgis/core/views/MapView.js';
+    import Extent from 'https://js.arcgis.com/next/@arcgis/core/geometry/Extent.js';
+    import {whenFalseOnce, whenTrueOnce} from 'https://js.arcgis.com/next/@arcgis/core/core/watchUtils.js';
+    import {buffer} from 'https://js.arcgis.com/next/@arcgis/core/geometry/geometryEngine.js';
+    import esriConfig from 'https://js.arcgis.com/next/@arcgis/core/config.js';
+    esriConfig.assetsPath = 'https://cdn.jsdelivr.net/npm/@arcgis/core@next/assets';
     console.log('initializing map');
 
     const layer = new FeatureLayer({
@@ -51,7 +50,7 @@
     const view = new MapView({
       map,
       container: document.getElementById('map'),
-      extent: defaultExtent,
+      // center: [-12612006, 4799406.5],
       ui: {
         components: ['zoom'],
       },
@@ -70,7 +69,7 @@
 
     map.add(layer);
 
-    const handle = setTimeout(async () => {
+    const changeExpressionAndZoomToResult = async () => {
       const layerView = await view.whenLayerView(layer);
       layer.definitionExpression = "COUNTY='SALT LAKE'";
 
@@ -97,7 +96,13 @@
           return view.goTo(extent);
         });
       });
-    }, 2000);
+    };
+
+    const div = document.createElement('div');
+    div.onclick = changeExpressionAndZoomToResult;
+    div.innerText = 'step 1';
+
+    view.ui.add(div, 'top-left');
 
     const identify = async (where) => {
       console.log('identifying');

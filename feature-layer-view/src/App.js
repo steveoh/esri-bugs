@@ -4,6 +4,9 @@ import EsriMap from '@arcgis/core/Map';
 import MapView from '@arcgis/core/views/MapView';
 import Extent from '@arcgis/core/geometry/Extent';
 import { whenFalseOnce, whenTrueOnce } from '@arcgis/core/core/watchUtils';
+import { buffer } from '@arcgis/core/geometry/geometryEngine';
+import esriConfig from '@arcgis/core/config';
+esriConfig.assetsPath = './assets';
 
 const defaultExtent = new Extent({
   xmax: -12612006,
@@ -85,10 +88,11 @@ function App() {
             };
           }
 
+          console.log('zooming in');
           return view.current.goTo(extent);
         });
       });
-    }, 1000);
+    }, 2000);
 
     return () => {
       if (handle) {
@@ -107,12 +111,22 @@ function App() {
 
     const queryFeatures = async (opts) => {
       const query = {
-        geometry: opts.mapPoint,
-        distance: view.current.resolution * 7,
         outFields: 'TYPE',
         orderByFields: 'TYPE ASC',
         returnGeometry: true,
       };
+
+      const geom = buffer(opts.mapPoint, view.current.resolution * 12, 'meters');
+      query.geometry = geom;
+      view.current.graphics.add({
+        attributes: {},
+        geometry: geom,
+        symbol: {
+          type: "simple-fill",
+          outline: { width: 1.5, color: [32, 26, 216, .4] },
+          color: [0, 0, 0, 0]
+        }
+      });
 
       const featureSet = await layerView.current.queryFeatures(query);
       console.log(featureSet.features.length);
@@ -134,8 +148,7 @@ function App() {
   }, [identify]);
 
   return (
-    <div ref={mapDiv} style={{ height: '100%', width: '100%' }}>
-    </div>
+    <div ref={mapDiv} style={{ height: '100%', width: '100%' }} />
   );
 }
 
